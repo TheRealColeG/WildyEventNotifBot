@@ -35,6 +35,7 @@ client.on('messageCreate', (msg) => {
 client.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
 
+    const command = commands.find(command => command.name === interaction.commandName);
     if (interaction.commandName === 'getEvents') {
         await interaction.reply('Pong!');
     }
