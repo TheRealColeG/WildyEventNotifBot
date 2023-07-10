@@ -28,7 +28,7 @@ client.on('ready', (c) => {
 When the bot sees a message in any of the servers that it is in (that it has access to), 
 it'll log the username of the author of the message (as of right now - might change later if needed) */
 client.on('messageCreate', (msg) => {
-    console.log(msg.author.username);
+    console.log(msg.author.username + ": " + msg.content);
 });
 
 //When the user types in a command, bot will take appropriate action
