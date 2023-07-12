@@ -35,8 +35,10 @@ client.on('messageCreate', (msg) => {
 
 //When the user types in a command, bot will take appropriate action
 client.on('interactionCreate', async interaction => {
+    //If the interaction is a DM command, ignore it - I think
     if (!interaction.isChatInputCommand()) return;
 
+    //If command is getevents, give/remove user wildy event role
     if (interaction.commandName === 'getevents') {
         //if user doesnt have the wildy event role, give it to them and reply
         if (!interaction.member.roles.cache.some(role => role.name === 'Wildy Events')) {
@@ -46,6 +48,7 @@ client.on('interactionCreate', async interaction => {
                 console.error(`Failed to add role: Events - ${error}`);
             }
             await interaction.reply('User enrolled in event notifications.');
+        //if user has the wildy event role, remove it and reply
         } else {
             try {
                 await interaction.member.roles.remove('1128051399062720625');
@@ -55,6 +58,13 @@ client.on('interactionCreate', async interaction => {
             await interaction.reply('User unenrolled from event notifications.');
         }
     };
+});
+
+client.once('ready', async () => {
+    console.log('Ready!');
+
+    //Create timer for wildy events
+    const timer = require('./timer.js');
 });
 
 //Logs bot in using token from loginToken.json (which is gitignored)
