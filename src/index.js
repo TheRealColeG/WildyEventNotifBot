@@ -15,6 +15,14 @@ const client = new Client({
 //When the bot is online, it'll log this message
 client.on('ready', (c) => {
     console.log(`Logged in as ${c.user.tag}!`);
+
+    //Notify users with wildy event role that event is starting soon
+    const guild = client.guilds.cache.get(config.BOT_TEST_GUILD_ID);
+    if (!guild) return console.log("Guild not found.");
+    const role = guild.roles.cache.find(role => role.name === 'Wildy Events');
+    const channel = guild.channels.cache.get(config.BOT_TEST_TEXT_CHANNEL_ID);
+
+    channel.send(`${role.toString()} Wildy event starting in 15 minutes!`);
 } );
 
 /*
@@ -43,7 +51,7 @@ client.on('interactionCreate', async interaction => {
         //if user doesnt have the wildy event role, give it to them and reply
         if (!interaction.member.roles.cache.some(role => role.name === 'Wildy Events')) {
             try {
-                await interaction.member.roles.add('1128051399062720625');
+                await interaction.member.roles.add(config.WILDY_ROLE_ID);
             } catch (error) {
                 console.error(`Failed to add role: Events - ${error}`);
             }
@@ -51,7 +59,7 @@ client.on('interactionCreate', async interaction => {
         //if user has the wildy event role, remove it and reply
         } else {
             try {
-                await interaction.member.roles.remove('1128051399062720625');
+                await interaction.member.roles.remove(config.WILDY_ROLE_ID);
             } catch (error) {
                 console.error(`Failed to remove role: Events - ${error}`);
             }
@@ -61,11 +69,51 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.once('ready', async () => {
+
     console.log('Ready!');
 
     //Create timer for wildy events
     const timer = require('./timer.js');
+
+    minsToWait = -1;
+
+    //If there are events, set the timer
+    timer.then((event) => {
+        //If there are no events, don't set the timer obviously - maybe send a message to the channel saying chungus
+        if (event == null) {
+            console.log("No events found.");
+            return;
+        }
+
+        //Check current time and set time to wait
+        const currentDate = new Date();
+
+        if (currentDate.getMinutes() < 15) {
+            minsToWait = 15 - currentDate.getMinutes();
+        } else if (currentDate.getMinutes() > 15) {
+            minsToWait = 60 - currentDate.getMinutes() + 15;
+        } else {
+            minsToWait = 0;
+        }
+    });
+
+    if (minsToWait == -1) {
+        console.log("Time to wait not set.");
+        return;
+    }
+
+    //Wait for timeToWait minutes
+    await new Promise(r => setTimeout(r, minsToWait*60*1000));
+
+    //Notify users with wildy event role that event is starting soon
+    const guild = client.guilds.cache.get(config.BOT_TEST_GUILD_ID);
+    const role = guild.roles.cache.find(role => role.name === 'Wildy Events');
+    const channel = guild.channels.cache.get(config.BOT_TEST_TEXT_CHANNEL_ID);
+
+    channel.send(`${role.toString()} Wildy event starting in 15 minutes!`);
 });
 
 //Logs bot in using token from loginToken.json (which is gitignored)
 client.login(config.TOKEN);
+
+

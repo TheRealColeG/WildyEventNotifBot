@@ -44,7 +44,7 @@ eventsPromise.then((events) => {
     }
 
     if (soonest.in < 15) {
-        module.exports = soonest;
+        module.exports = new Promise(soonest);
     } else {
         module.exports = null;
     }
