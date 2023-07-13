@@ -15,14 +15,6 @@ const client = new Client({
 //When the bot is online, it'll log this message
 client.on('ready', (c) => {
     console.log(`Logged in as ${c.user.tag}!`);
-
-    //Notify users with wildy event role that event is starting soon
-    const guild = client.guilds.cache.get(config.BOT_TEST_GUILD_ID);
-    if (!guild) return console.log("Guild not found.");
-    const role = guild.roles.cache.find(role => role.name === 'Wildy Events');
-    const channel = guild.channels.cache.get(config.BOT_TEST_TEXT_CHANNEL_ID);
-
-    channel.send(`${role.toString()} Wildy event starting in 15 minutes!`);
 } );
 
 /*
@@ -73,36 +65,55 @@ client.once('ready', async () => {
     console.log('Ready!');
 
     //Create timer for wildy events
-    const timer = require('./timer.js');
+    //use timer.js for events
+    const timerFile = require('./timer.js');
 
     minsToWait = -1;
+    
+    //make this function wait until the scraper is done
+
 
     //If there are events, set the timer
-    timer.then((event) => {
+    //Have to wait for timer to get events
+    timerFile.timer.then((event) => {
         //If there are no events, don't set the timer obviously - maybe send a message to the channel saying chungus
         if (event == null) {
-            console.log("No events found.");
+            console.log("No events found / timer function failed.");
             return;
         }
-
+        
         //Check current time and set time to wait
-        const currentDate = new Date();
+        const currentTime = (new Date()).getMinutes();
 
-        if (currentDate.getMinutes() < 15) {
-            minsToWait = 15 - currentDate.getMinutes();
-        } else if (currentDate.getMinutes() > 15) {
-            minsToWait = 60 - currentDate.getMinutes() + 15;
+        if (currentTime < 45) {
+            minsToWait = 45 - currentTime;
+        } else if (currentTime > 45) {
+            minsToWait = 105 - currentTime;
         } else {
             minsToWait = 0;
         }
+
+        if (minsToWait == -1) {
+            console.log("Time to wait not set.");
+            return;
+        }
+
+        //Notify users with wildy event role that event is starting soon
+        const guild = client.guilds.cache.get(config.BOT_TEST_GUILD_ID);
+        if (!guild) return console.log("Guild not found.");
+        const role = guild.roles.cache.find(role => role.name === 'Wildy Events');
+        if (!role) return console.log("Role not found.");
+        const channel = guild.channels.cache.get(config.BOT_TEST_TEXT_CHANNEL_ID);
+        if (!channel) return console.log("Channel not found.");
+
+        channel.send(`${role.toString()} ${event.name} starting in ${event.in} minutes!`);
+        console.log("Timer set for " + minsToWait + " minutes.");
     });
 
-    if (minsToWait == -1) {
-        console.log("Time to wait not set.");
-        return;
-    }
+    
 
     //Wait for timeToWait minutes
+    /*
     await new Promise(r => setTimeout(r, minsToWait*60*1000));
 
     //Notify users with wildy event role that event is starting soon
@@ -111,6 +122,7 @@ client.once('ready', async () => {
     const channel = guild.channels.cache.get(config.BOT_TEST_TEXT_CHANNEL_ID);
 
     channel.send(`${role.toString()} Wildy event starting in 15 minutes!`);
+    */
 });
 
 //Logs bot in using token from loginToken.json (which is gitignored)

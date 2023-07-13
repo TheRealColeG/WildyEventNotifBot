@@ -36,3 +36,12 @@ console.log(
     events[1].when - timeInRS,
     events[2].when - timeInRS
 )
+
+//declare async function so that await can be used
+async function test() {
+    let timerFile = require('./timer.js');
+    let timerPromise = await timerFile.timer;
+    console.log(timerPromise);
+}
+
+test();
