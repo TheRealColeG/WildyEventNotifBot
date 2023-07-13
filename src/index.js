@@ -152,7 +152,7 @@ async function broadcastEvent(event) {
 
     //wait 10 minutes and notify users that event is starting in 5 minutes
     await(new Promise(resolve => setTimeout(resolve, 10 * 60 * 1000)).then(() => {
-        channel.send(`${role.toString()} ${event.name} starting in ${(event.in) - 10} minutes!`);
+        channel.send(`${role.toString()} ${event.name} starting in ${Number(Number(event.in) - 10)} minutes!`);
     }));
 
     return;

@@ -52,7 +52,7 @@ async function timeouts(str) {
 
 async function callingTimeouts() {
     //await for the specified amount of time, then call the function repeatedly
-    await(new Promise(resolve => setTimeout(resolve, 3000) && console.log("waited 3 seconds")).then(() => {
+    await(new Promise(resolve => setTimeout(resolve, 3000)).then(() => {
         setInterval(timeouts, 1000, "1 second");
     }));
 }
