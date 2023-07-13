@@ -46,7 +46,7 @@ async function timer() {
         }
 
         //how do i make this function not void?
-        if (soonest.in <= 15 && soonest.in >= 0) {
+        if (soonest.in <= 59 && soonest.in >= 0) {
             console.log("exporting soonest event");
             return soonest;
         } else {

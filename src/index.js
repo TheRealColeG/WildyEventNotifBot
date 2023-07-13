@@ -100,7 +100,6 @@ async function waitUntilQuarterTo() {
     }
 
     console.log("Time to wait: " + minsToWait + " minutes.");
-
     
     //wait until 45, then check for event every hour
     await(new Promise(resolve => setTimeout(resolve, minsToWait * 60 * 1000)).then(() => {
@@ -108,6 +107,7 @@ async function waitUntilQuarterTo() {
         console.log(`Calling checkForEvent every hour now: ${(new Date()).getMinutes()}`)
         //initial call to checkForEvent, then again every hour (setInterval doesn't call immediately)
         checkForEvent();
+        
         setInterval(checkForEvent, 60 * 60 * 1000);
     }));
     
