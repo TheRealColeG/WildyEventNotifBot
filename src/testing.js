@@ -29,13 +29,13 @@ let timeInRS = Number((currentTime.getHours()+4)%24)*60+Number(currentTime.getMi
 
 let events = testingMatrices();
 
-console.log(events);
+// console.log(events);
 
-console.log(
-    events[0].when - timeInRS,
-    events[1].when - timeInRS,
-    events[2].when - timeInRS
-)
+// console.log(
+//     events[0].when - timeInRS,
+//     events[1].when - timeInRS,
+//     events[2].when - timeInRS
+// )
 
 //declare async function so that await can be used
 async function test() {
@@ -44,4 +44,17 @@ async function test() {
     console.log(timerPromise);
 }
 
-test();
+//test();
+
+async function timeouts(str) {
+    console.log(str);
+}
+
+async function callingTimeouts() {
+    //await for the specified amount of time, then call the function repeatedly
+    await(new Promise(resolve => setTimeout(resolve, 3000) && console.log("waited 3 seconds")).then(() => {
+        setInterval(timeouts, 1000, "1 second");
+    }));
+}
+
+callingTimeouts();

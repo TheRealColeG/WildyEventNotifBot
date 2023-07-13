@@ -64,68 +64,99 @@ client.once('ready', async () => {
 
     console.log('Ready!');
 
-    //Create timer for wildy events
-    //use timer.js for events
-    const timerFile = require('./timer.js');
-
-    minsToWait = -1;
-    
-    //make this function wait until the scraper is done
-
-
-    //If there are events, set the timer
-    //Have to wait for timer to get events
-    timerFile.timer.then((event) => {
-        //If there are no events, don't set the timer obviously - maybe send a message to the channel saying chungus
-        if (event == null) {
-            console.log("No events found / timer function failed.");
-            return;
-        }
-        
-        //Check current time and set time to wait
-        const currentTime = (new Date()).getMinutes();
-
-        if (currentTime < 45) {
-            minsToWait = 45 - currentTime;
-        } else if (currentTime > 45) {
-            minsToWait = 105 - currentTime;
-        } else {
-            minsToWait = 0;
-        }
-
-        if (minsToWait == -1) {
-            console.log("Time to wait not set.");
-            return;
-        }
-
-        //Notify users with wildy event role that event is starting soon
-        const guild = client.guilds.cache.get(config.BOT_TEST_GUILD_ID);
-        if (!guild) return console.log("Guild not found.");
-        const role = guild.roles.cache.find(role => role.name === 'Wildy Events');
-        if (!role) return console.log("Role not found.");
-        const channel = guild.channels.cache.get(config.BOT_TEST_TEXT_CHANNEL_ID);
-        if (!channel) return console.log("Channel not found.");
-
-        channel.send(`${role.toString()} ${event.name} starting in ${event.in} minutes!`);
-        console.log("Timer set for " + minsToWait + " minutes.");
-    });
-
-    
-
-    //Wait for timeToWait minutes
-    /*
-    await new Promise(r => setTimeout(r, minsToWait*60*1000));
-
-    //Notify users with wildy event role that event is starting soon
-    const guild = client.guilds.cache.get(config.BOT_TEST_GUILD_ID);
-    const role = guild.roles.cache.find(role => role.name === 'Wildy Events');
-    const channel = guild.channels.cache.get(config.BOT_TEST_TEXT_CHANNEL_ID);
-
-    channel.send(`${role.toString()} Wildy event starting in 15 minutes!`);
-    */
+    //call the waitUntilQuarterTo function
+    waitUntilQuarterTo();
 });
 
 //Logs bot in using token from loginToken.json (which is gitignored)
 client.login(config.TOKEN);
+
+//this will be called when the bot is ready
+//It checks if it is quarter to the hour
+//THAT IS IT!!!
+async function waitUntilQuarterTo() {
+
+    minsToWait = -1;
+        
+    //Check current time and set time to wait
+    const currentTime = (new Date()).getMinutes();
+
+    //Have to maneuver around the 0-59 minute clock cycle
+    if (currentTime < 45) {
+        //check for event in 1-45 mins
+        minsToWait = 45 - currentTime;
+    } else if (currentTime > 45) {
+        //check for event in 46-59 mins
+        minsToWait = 105 - currentTime;
+    } else {
+        //check for event now
+        minsToWait = 0;
+    }
+
+    //Honestly I don't think this can/will ever happen but just in case, right?
+    if (minsToWait == -1) {
+        console.log("Time to wait not set.");
+        return;
+    }
+
+    console.log("Time to wait: " + minsToWait + " minutes.");
+
+    
+    //wait until 45, then check for event every hour
+    await(new Promise(resolve => setTimeout(resolve, minsToWait * 60 * 1000)).then(() => {
+        //call every hour
+        console.log(`Calling checkForEvent every hour now: ${(new Date()).getMinutes()}`)
+        //initial call to checkForEvent, then again every hour (setInterval doesn't call immediately)
+        checkForEvent();
+        setInterval(checkForEvent, 60 * 60 * 1000);
+    }));
+    
+}
+
+//Call this function once it is quarter to the hour
+//It will check if there's a wildy event <= 15 away
+//If there is, it will notify users with the wildy event role
+//Secondly, it will notify users when it is 5 minutes away
+//If not, it will end so it can be called again at quarter to the next hour
+function checkForEvent() {
+
+    //Create timer for wildy events
+    //use timer.js for events
+    const timerFile = require('./timer.js');
+
+    //call the timer function, wait for it to finish
+    timerFile.timer.then((event) => {
+        //If there are no upcoming events, don't set the timer obviously
+        if (event == null) {
+            console.log("Event not within 15 minutes.");
+            return;
+        }
+        //If we get here, there is an event within 15 minutes
+
+        broadcastEvent(event);
+    });
+
+}
+
+async function broadcastEvent(event) {
+
+    //Notify users with wildy event role that event is starting soon
+    const guild = client.guilds.cache.get(config.BOT_TEST_GUILD_ID);
+    if (!guild) return console.log("Guild not found.");
+    const role = guild.roles.cache.find(role => role.name === 'Wildy Events');
+    if (!role) return console.log("Role not found.");
+    const channel = guild.channels.cache.get(config.BOT_TEST_TEXT_CHANNEL_ID);
+    if (!channel) return console.log("Channel not found.");
+
+    channel.send(`${role.toString()} ${event.name} starting in ${event.in} minutes!`);
+
+    //wait 10 minutes and notify users that event is starting in 5 minutes
+    await(new Promise(resolve => setTimeout(resolve, 10 * 60 * 1000)).then(() => {
+        channel.send(`${role.toString()} ${event.name} starting in ${(event.in) - 10} minutes!`);
+    }));
+
+    return;
+}
+
 
 

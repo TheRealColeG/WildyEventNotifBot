@@ -51,7 +51,7 @@ async function timer() {
             return soonest;
         } else {
             console.log("exporting soonest event - but it's not that soon");
-            return soonest;
+            return;
         }
     });
 
