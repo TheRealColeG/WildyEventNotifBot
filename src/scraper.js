@@ -11,8 +11,14 @@ async function scrapeProduct(url) {
     }
     
     const specialEvents = await page.evaluate(() => {
-        const tds = Array.from(document.querySelectorAll('tr'));
-        const withoutDupes = tds.filter(item => item.innerText.includes('Special\t'));
+        const table = document.getElementById('reload');
+        if (table == null) {
+            console.log("tds is null");
+            return;
+        }
+
+        const tds2 = Array.from(table.querySelectorAll('tr'));
+        const withoutDupes = tds2.filter(item => item.innerText.includes('Special\t'));
         return withoutDupes.map(item => item.innerText.split('\t'));
     });
 

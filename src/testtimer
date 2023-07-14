@@ -1,0 +1,56 @@
+//Calculating time until event
+function timeUntilEvent(rsTime, eventTime) {
+    //rs time is 00:00 -> 23:59 (0 -> 1439 mins)
+    //Clock resets - issue is if event is at 00:00 - 04:00, and rs time is 19:00 - 23:59
+    //Has to be a way to have it work for all cases
+    //github copilot help please
+    let timeUntil = eventTime - rsTime;
+    if (timeUntil < 0) {
+        timeUntil += 1440;
+    }
+    return timeUntil;
+}
+
+//Testing all cases
+//CONVERT TO MINUTES
+console.log("Should be 240: " + timeUntilEvent(rsTime = 0, eventTime = 240)); //4 hours - 00:00 -> 04:00
+console.log("Should be 300: " + timeUntilEvent(rsTime = 0, eventTime = 300)); //5 hours - 00:00 -> 05:00
+
+console.log("Should be 240: " + timeUntilEvent(rsTime = 720, eventTime = 960)); //4 hours - 12:00 -> 16:00
+console.log("Should be 300: " + timeUntilEvent(rsTime = 720, eventTime = 1020)); //5 hours - 12:00 -> 17:00
+
+console.log("Should be 240: " + timeUntilEvent(rsTime = 1200, eventTime = 0)); //4 hours - 20:00 -> 00:00
+console.log("Should be 300: " + timeUntilEvent(rsTime = 1140, eventTime = 0)); //5 hours - 19:00 -> 00:00
+
+console.log("Should be 240: " + timeUntilEvent(rsTime = 1260, eventTime = 60)); //4 hours - 21:00 -> 01:00
+console.log("Should be 300: " + timeUntilEvent(rsTime = 1200, eventTime = 60)); //5 hours - 20:00 -> 01:00
+
+console.log("Should be 240: " + timeUntilEvent(rsTime = 1320, eventTime = 120)); //4 hours - 22:00 -> 02:00
+console.log("Should be 300: " + timeUntilEvent(rsTime = 1260, eventTime = 120)); //5 hours - 21:00 -> 02:00
+
+console.log("Should be 240: " + timeUntilEvent(rsTime = 1380, eventTime = 180)); //4 hours - 23:00 -> 03:00
+console.log("Should be 300: " + timeUntilEvent(rsTime = 1320, eventTime = 180)); //5 hours - 22:00 -> 03:00
+
+for (i = 0; i < 1200; i = i + 60) {
+    console.log("Should be 240: " + timeUntilEvent(rsTime = i, eventTime = i + 240));
+    console.log("Should be 300: " + timeUntilEvent(rsTime = i, eventTime = i + 300));
+}
+
+let events = [
+    [ 'King Black Dragon Rampage\nSpecial', '05:00' ],
+    [ 'Infernal Star\nSpecial', '19:00' ],
+    [ 'Evil Bloodwood Tree\nSpecial', '00:00' ]
+];
+
+convertTimes(events[0][1], Number((currentTime.getHours()+4)%24)*60+Number(currentTime.getMinutes()););
+convertTimes(events[1][1], Number((currentTime.getHours()+4)%24)*60+Number(currentTime.getMinutes()););
+convertTimes(events[2][1], Number((currentTime.getHours()+4)%24)*60+Number(currentTime.getMinutes()););
+
+function convertTimes(eventTime, rsTime) {
+    let eventTimeInMinutes = Number(eventTime.split(':')[0])*60+Number(eventTime.split(':')[1]);
+    let timeUntil = eventTimeInMinutes - rsTime;
+    if (timeUntil < 0) {
+        timeUntil += 1440;
+    }
+    return timeUntil;
+}

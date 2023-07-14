@@ -108,7 +108,7 @@ async function waitUntilQuarterTo() {
         //initial call to checkForEvent, then again every hour (setInterval doesn't call immediately)
         checkForEvent();
         
-        setInterval(checkForEvent, 60 * 60 * 1000);
+        setInterval(checkForEvent(), 60 * 60 * 1000);
     }));
     
 }
@@ -125,7 +125,7 @@ function checkForEvent() {
     const timerFile = require('./timer.js');
 
     //call the timer function, wait for it to finish
-    timerFile.timer.then((event) => {
+    let event = timerFile.timer.then((event) => {
         //If there are no upcoming events, don't set the timer obviously
         if (event == null) {
             console.log("Event not within 15 minutes.");
@@ -134,7 +134,10 @@ function checkForEvent() {
         //If we get here, there is an event within 15 minutes
 
         broadcastEvent(event);
+        return event;
     });
+
+    return event;
 
 }
 

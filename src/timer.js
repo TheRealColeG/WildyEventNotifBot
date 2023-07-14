@@ -24,15 +24,15 @@ async function timer() {
         [
             {
                 name: events[0][0].split('\n')[0],
-                in: (Number(events[0][1].split(':')[0])*60+Number(events[0][1].split(':')[1])) - timeInRS,
+                in: convertTimes(events[0][1], timeInRS)
             },
             {
                 name: events[1][0].split('\n')[0],
-                in: (Number(events[1][1].split(':')[0])*60+Number(events[1][1].split(':')[1])) - timeInRS,
+                in: convertTimes(events[1][1], timeInRS)
             },
             {
                 name: events[2][0].split('\n')[0],
-                in: (Number(events[2][1].split(':')[0])*60+Number(events[2][1].split(':')[1])) - timeInRS,
+                in: convertTimes(events[2][1], timeInRS)
             },
         ];
 
@@ -45,7 +45,6 @@ async function timer() {
             }
         }
 
-        //how do i make this function not void?
         if (soonest.in <= 59 && soonest.in >= 0) {
             console.log("exporting soonest event");
             return soonest;
@@ -58,8 +57,18 @@ async function timer() {
     return soonest;
 };
 
+function convertTimes(eventTime, rsTime) {
+    let eventTimeInMinutes = Number(eventTime.split(':')[0])*60+Number(eventTime.split(':')[1]);
+    let timeUntil = eventTimeInMinutes - rsTime;
+    if (timeUntil < 0) {
+        timeUntil += 1440;
+    }
+    return timeUntil;
+}
+
 //export this timer
 module.exports = {
     timer: timer(),
 };
+
 
