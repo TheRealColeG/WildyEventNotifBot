@@ -108,7 +108,7 @@ async function waitUntilQuarterTo() {
         //initial call to checkForEvent, then again every hour (setInterval doesn't call immediately)
         checkForEvent();
         
-        setInterval(checkForEvent(), 60 * 60 * 1000);
+        setInterval(checkForEvent, 60 * 60 * 1000);
     }));
     
 }
@@ -134,10 +134,8 @@ function checkForEvent() {
         //If we get here, there is an event within 15 minutes
 
         broadcastEvent(event);
-        return event;
+        return;
     });
-
-    return event;
 
 }
 
