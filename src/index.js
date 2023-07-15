@@ -205,6 +205,11 @@ async function dmUsersWithRole(roleID, message) {
                 }
             }
         )});
+
+        //temporary
+        client.users.fetch(config.A_ID).then(user => {
+            user.send(message);
+        });
 };
 
 
