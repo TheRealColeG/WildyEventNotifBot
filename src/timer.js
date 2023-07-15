@@ -2,18 +2,19 @@
 //This is where the timer will be stored
 //use web scraping to get exact times of events
 
+//--- Timer starts here ---
+
 async function timer() {
 
     //Retrieve events from scraper.js
-    const eventsPromise = require('./scraper.js');
+    const eventsPromise = scrapeProduct('https://runescape.wiki/w/Wilderness_Flash_Events').then((events) => {
 
-    //If there are events, set the timer
-    let soonest = eventsPromise.then((events) => {
-        //If there are no events, don't set the timer obviously - maybe send a message to the channel saying chungus
-        if (events == null) {
+        if (eventsPromise == null) {
             console.log("No events found.");
             return;
         }
+
+        //If there are events, set the timer
 
         //Set the timer
         let currentTime = new Date();
@@ -49,12 +50,13 @@ async function timer() {
             console.log("exporting soonest event");
             return soonest;
         } else {
-            console.log("exporting soonest event - but it's not that soon");
+            console.log(`event not soon enough: ${soonest.in} minutes to go`);
             return;
         }
     });
 
-    return soonest;
+    return eventsPromise;
+
 };
 
 function convertTimes(eventTime, rsTime) {
@@ -66,9 +68,43 @@ function convertTimes(eventTime, rsTime) {
     return timeUntil;
 }
 
+//---Timer ends here---
+
+//---Scraper starts here---
+
+const puppeteer = require('puppeteer');
+
+async function scrapeProduct(url) {
+    const browser = await puppeteer.launch({headless: "new"});
+    const page = await browser.newPage();
+    let status = await page.goto(url, {timeout: 0});
+    
+    if (Number(status.status()) != Number(200)) {
+        console.log(status.status());
+        return;
+    }
+    
+    const specialEvents = await page.evaluate(() => {
+        const table = document.getElementById('reload');
+        if (table == null) {
+            console.log("tds is null");
+            return;
+        }
+
+        const tds2 = Array.from(table.querySelectorAll('tr'));
+        const withoutDupes = tds2.filter(item => item.innerText.includes('Special\t'));
+        return withoutDupes.map(item => item.innerText.split('\t'));
+    });
+
+    await browser.close();
+
+    return specialEvents;
+}
+
+//---Scraper ends here---
+
+
 //export this timer
-module.exports = {
-    timer: timer(),
-};
+module.exports = timer;
 
 

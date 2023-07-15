@@ -15,6 +15,10 @@ const client = new Client({
 //When the bot is online, it'll log this message
 client.on('ready', (c) => {
     console.log(`Logged in as ${c.user.tag}!`);
+
+    //Set bot's status to "Playing Runescape" 
+    client.user.setActivity("Farts", { type: "Sucking" });
+
 } );
 
 /*
@@ -122,19 +126,25 @@ function checkForEvent() {
 
     //Create timer for wildy events
     //use timer.js for events
-    const timerFile = require('./timer.js');
+    const timerFunc = require('./timer.js');
 
     //call the timer function, wait for it to finish
-    let event = timerFile.timer.then((event) => {
+    timerFunc().then((event) => {
         //If there are no upcoming events, don't set the timer obviously
         if (event == null) {
             console.log("Event not within 15 minutes.");
             return;
         }
-        //If we get here, there is an event within 15 minutes
 
+        //If we get here, there is an event within 15 minutes
+        //Broadcast to server @role that event is starting in 15 minutes
         broadcastEvent(event);
-        return;
+        //DM users with wildy event role that event is starting in 15 minutes
+        dmUsersWithRole(config.WILDY_ROLE_ID, `${event.name} starting in ${event.in} minutes!`);
+        //wait 10 minutes and notify users that event is starting in 5 minutes
+        new Promise(resolve => setTimeout(resolve, 10 * 60 * 1000)).then(() => {
+            dmUsersWithRole(config.WILDY_ROLE_ID, `${event.name} starting in 5 minutes!`);
+        });
     });
 
 }
@@ -155,9 +165,48 @@ async function broadcastEvent(event) {
     await(new Promise(resolve => setTimeout(resolve, 10 * 60 * 1000)).then(() => {
         channel.send(`${role.toString()} ${event.name} starting in ${Number(Number(event.in) - 10)} minutes!`);
     }));
-
-    return;
 }
+
+/**
+ * 
+ * @param roleID - numeric ID of the role to get users from
+ * @returns a Collection<string, GuildMember> of users with the given role
+ */
+async function getUsersWithRole(roleID) {
+
+    const guild = client.guilds.cache.get(config.BOT_TEST_GUILD_ID);
+    if (!guild) return console.log("Guild not found.");
+
+    const role = guild.roles.cache.find(role => role.id === roleID);
+    if (!role) return console.log("Role not found.");
+    console.log(role);
+
+    const members = guild.members.fetch().then((members) => {
+        return members.filter(member => member.roles.cache.has(role.id));
+    });
+
+    console.log(members);
+
+    return members;
+}
+
+async function dmUsersWithRole(roleID, message) {
+    getUsersWithRole(roleID).then((users) => {
+        if (users.size == 0 || users == null || !users) {
+            console.log("No users found with role.");
+            return;
+        }
+
+        users.forEach((user) => {
+                console.log(`Sending message to ${user.user.username}`);
+                //don't send message to self - crashes bot
+                if (user.id !== client.id) {
+                    user.send(message);
+                }
+            }
+        )});
+};
+
 
 
 
