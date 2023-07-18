@@ -44,10 +44,19 @@ client.on('interactionCreate', async interaction => {
 
     //If command is getevents, give/remove user wildy event role
     if (interaction.commandName === 'getevents') {
+        //findout the server id
+        const guild = interaction.guild;
+        if (!guild) return console.log("Guild not found.");
+
+        //find the role id for that server
+        const role = guild.roles.cache.find(role => role.name === 'Wildy Events');
+        if (!role) return console.log("Role not found.");
+
         //if user doesnt have the wildy event role, give it to them and reply
         if (!interaction.member.roles.cache.some(role => role.name === 'Wildy Events')) {
             try {
-                await interaction.member.roles.add(config.WILDY_ROLE_ID);
+                console.log("User doesn't have role. Adding role.")
+                await interaction.member.roles.add(role.id);
             } catch (error) {
                 console.error(`Failed to add role: Events - ${error}`);
             }
@@ -55,7 +64,8 @@ client.on('interactionCreate', async interaction => {
         //if user has the wildy event role, remove it and reply
         } else {
             try {
-                await interaction.member.roles.remove(config.WILDY_ROLE_ID);
+                console.log("User has role. Removing role.")
+                await interaction.member.roles.remove(role.id);
             } catch (error) {
                 console.error(`Failed to remove role: Events - ${error}`);
             }
@@ -138,15 +148,28 @@ function checkForEvent() {
 
         //If we get here, there is an event within 15 minutes
         //Broadcast to server @role that event is starting in 15 minutes
-        broadcastEvent(event);
+        //broadcastEvent(event);
+
         //DM users with wildy event role that event is starting in 15 minutes
-        dmUsersWithRole(config.WILDY_ROLE_ID, `${event.name} starting in ${event.in} minutes!`);
+        wildyDM(`${event.name} starting in ${event.in} minutes!`);
         //wait 10 minutes and notify users that event is starting in 5 minutes
         new Promise(resolve => setTimeout(resolve, 10 * 60 * 1000)).then(() => {
-            dmUsersWithRole(config.WILDY_ROLE_ID, `${event.name} starting in 5 minutes!`);
+            wildyDM(`${event.name} starting in 5 minutes!`);
         });
     });
+}
 
+async function wildyDM (message) {
+    //Notify users with wildy event role that event is starting soon
+    //use dmUsersWithRole function
+    for (let i = 0; i < config.WILDY_ROLE_IDS.length; i++) {
+        const roleID = config.WILDY_ROLE_IDS[i].WILDY_ROLE_ID;
+        const serverID = config.WILDY_ROLE_IDS[i].SERVER_ID;
+        console.log(roleID);
+        await dmUsersWithRole(serverID, roleID, message).then(() => {
+            console.log(`Notified users that ${message}`);
+        });
+    }
 }
 
 async function broadcastEvent(event) {
@@ -170,46 +193,59 @@ async function broadcastEvent(event) {
 /**
  * 
  * @param roleID - numeric ID of the role to get users from
+ * @param serverID - numeric ID of the server to get users from
  * @returns a Collection<string, GuildMember> of users with the given role
  */
-async function getUsersWithRole(roleID) {
+async function getUsersWithRole(roleID, serverID) {
 
-    const guild = client.guilds.cache.get(config.BOT_TEST_GUILD_ID);
+    const guild = client.guilds.cache.get(serverID);
     if (!guild) return console.log("Guild not found.");
+    console.log(`Server ID: ${guild.id}`);
 
     const role = guild.roles.cache.find(role => role.id === roleID);
     if (!role) return console.log("Role not found.");
-    console.log(role);
+    console.log(`Role ID: ${role.id}`);
 
     const members = guild.members.fetch().then((members) => {
         return members.filter(member => member.roles.cache.has(role.id));
     });
 
-    console.log(members);
-
     return members;
 }
 
-async function dmUsersWithRole(roleID, message) {
-    getUsersWithRole(roleID).then((users) => {
-        if (users.size == 0 || users == null || !users) {
+async function dmUsersWithRole(serverID, roleID, message) {
+    getUsersWithRole(roleID, serverID).then((userColl) => {
+        let users = Array.from(userColl.values());
+
+        if (users == null || users.length == 0 || !users) {
             console.log("No users found with role.");
             return;
         }
 
+        console.log("Users found with role: " + users.length);
+
         users.forEach((user) => {
-                console.log(`Sending message to ${user.user.username}`);
+                console.log(`Sending message to ${user}`);
                 //don't send message to self - crashes bot
-                if (user.id !== client.id) {
+                if (user.id !== config.BOT_ID) {
                     user.send(message);
                 }
             }
         )});
 
-        //temporary
-        client.users.fetch(config.A_ID).then(user => {
+        /*temporary
+        client.users.fetch(config.AG_ID).then(user => {
             user.send(message);
         });
+
+        client.users.fetch(config.MS_ID).then(user => {
+            user.send(message);
+        });
+
+        client.users.fetch(config.QB_ID).then(user => {
+            user.send(message);
+        });
+        */
 };
 
 

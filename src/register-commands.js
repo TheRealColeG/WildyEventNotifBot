@@ -19,6 +19,16 @@ const rest = new REST({ version: '10' }).setToken(config.TOKEN);
             { body: commands}
         );
 
+        await rest.put (
+            Routes.applicationGuildCommands(config.BOT_ID, config.AG_GUILD_ID),
+            { body: commands}
+        );
+
+        await rest.put (
+            Routes.applicationGuildCommands(config.BOT_ID, config.QB_GUILD_ID),
+            { body: commands}
+        );
+
         console.log('Successfully registered application (/) commands.');
     }
     catch (error) {
