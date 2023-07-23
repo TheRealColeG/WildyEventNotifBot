@@ -14,7 +14,7 @@ const client = new Client({
 
 //When the bot is online, it'll log this message
 client.on('ready', (c) => {
-    console.log(`Logged in as ${c.user.tag}!`);
+    console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Logged in as ${c.user.tag}!`);
 
     //Set bot's status to "Playing Runescape" 
     client.user.setActivity("Farts", { type: "Sucking" });
@@ -31,7 +31,7 @@ client.on('messageCreate', (msg) => {
     }
 
     //Logs the message in the console
-    console.log(msg.author.username + ": " + msg.content);
+    console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] ${msg.author.username}:${msg.content}`);
 
     //If the message starts with "ping", bot will reply with "pong"
 
@@ -46,28 +46,28 @@ client.on('interactionCreate', async interaction => {
     if (interaction.commandName === 'getevents') {
         //findout the server id
         const guild = interaction.guild;
-        if (!guild) return console.log("Guild not found.");
+        if (!guild) return console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Guild not found`);
 
         //find the role id for that server
         const role = guild.roles.cache.find(role => role.name === 'Wildy Events');
-        if (!role) return console.log("Role not found.");
+        if (!role) return console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Role not found`);
 
         //if user doesnt have the wildy event role, give it to them and reply
         if (!interaction.member.roles.cache.some(role => role.name === 'Wildy Events')) {
             try {
-                console.log("User doesn't have role. Adding role.")
+                console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] ${interaction.user.username} doesn't have role. Adding role.`)
                 await interaction.member.roles.add(role.id);
             } catch (error) {
-                console.error(`Failed to add role: Events - ${error}`);
+                console.error(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Failed to add role: Events - ${error}`);
             }
             await interaction.reply('User enrolled in event notifications.');
         //if user has the wildy event role, remove it and reply
         } else {
             try {
-                console.log("User has role. Removing role.")
+                console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] ${interaction.user.username} has role. Removing role.`)
                 await interaction.member.roles.remove(role.id);
             } catch (error) {
-                console.error(`Failed to remove role: Events - ${error}`);
+                console.error(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Failed to remove role: Events - ${error}`);
             }
             await interaction.reply('User unenrolled from event notifications.');
         }
@@ -76,7 +76,7 @@ client.on('interactionCreate', async interaction => {
 
 client.once('ready', async () => {
 
-    console.log('Ready!');
+    console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Ready!`);
 
     //call the waitUntilQuarterTo function
     waitUntilQuarterTo();
@@ -109,16 +109,16 @@ async function waitUntilQuarterTo() {
 
     //Honestly I don't think this can/will ever happen but just in case, right?
     if (minsToWait == -1) {
-        console.log("Time to wait not set.");
+        console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Time to wait not set`);
         return;
     }
 
-    console.log("Time to wait: " + minsToWait + " minutes.");
+    console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Time to wait: ${minsToWait} minutes.`);
     
     //wait until 45, then check for event every hour
     await(new Promise(resolve => setTimeout(resolve, minsToWait * 60 * 1000)).then(() => {
         //call every hour
-        console.log(`Calling checkForEvent every hour now: ${(new Date()).getMinutes()}`)
+        console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Calling checkForEvent every hour now`)
         //initial call to checkForEvent, then again every hour (setInterval doesn't call immediately)
         checkForEvent();
         
@@ -142,7 +142,7 @@ function checkForEvent() {
     timerFunc().then((event) => {
         //If there are no upcoming events, don't set the timer obviously
         if (event == null) {
-            console.log("Event not within 15 minutes.");
+            console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Event not within 15 minutes.`);
             return;
         }
 
@@ -165,9 +165,8 @@ async function wildyDM (message) {
     for (let i = 0; i < config.WILDY_ROLE_IDS.length; i++) {
         const roleID = config.WILDY_ROLE_IDS[i].WILDY_ROLE_ID;
         const serverID = config.WILDY_ROLE_IDS[i].SERVER_ID;
-        console.log(roleID);
         await dmUsersWithRole(serverID, roleID, message).then(() => {
-            console.log(`Notified users that ${message}`);
+            console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Notified users that ${message}`);
         });
     }
 }
@@ -176,11 +175,11 @@ async function broadcastEvent(event) {
 
     //Notify users with wildy event role that event is starting soon
     const guild = client.guilds.cache.get(config.BOT_TEST_GUILD_ID);
-    if (!guild) return console.log("Guild not found.");
+    if (!guild) return console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Guild not found.`);
     const role = guild.roles.cache.find(role => role.name === 'Wildy Events');
-    if (!role) return console.log("Role not found.");
+    if (!role) return console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Role not found.`);
     const channel = guild.channels.cache.get(config.BOT_TEST_TEXT_CHANNEL_ID);
-    if (!channel) return console.log("Channel not found.");
+    if (!channel) return console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Channel not found.`);
 
     channel.send(`${role.toString()} ${event.name} starting in ${event.in} minutes!`);
 
@@ -199,12 +198,10 @@ async function broadcastEvent(event) {
 async function getUsersWithRole(roleID, serverID) {
 
     const guild = client.guilds.cache.get(serverID);
-    if (!guild) return console.log("Guild not found.");
-    console.log(`Server ID: ${guild.id}`);
+    if (!guild) return console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Guild not found.`);
 
     const role = guild.roles.cache.find(role => role.id === roleID);
-    if (!role) return console.log("Role not found.");
-    console.log(`Role ID: ${role.id}`);
+    if (!role) return console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Role not found.`);
 
     const members = guild.members.fetch().then((members) => {
         return members.filter(member => member.roles.cache.has(role.id));
@@ -218,14 +215,12 @@ async function dmUsersWithRole(serverID, roleID, message) {
         let users = Array.from(userColl.values());
 
         if (users == null || users.length == 0 || !users) {
-            console.log("No users found with role.");
+            console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] No users found with role.`);
             return;
         }
 
-        console.log("Users found with role: " + users.length);
-
         users.forEach((user) => {
-                console.log(`Sending message to ${user}`);
+                console.log(`[${new Date().getHours()}:${(new Date()).getMinutes()}] Sending message to ${user}`);
                 //don't send message to self - crashes bot
                 if (user.id !== config.BOT_ID) {
                     user.send(message);
