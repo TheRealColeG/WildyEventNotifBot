@@ -77,7 +77,24 @@ const puppeteer = require('puppeteer');
 async function scrapeProduct(url) {
     const browser = await puppeteer.launch({headless: "new"});
     const page = await browser.newPage();
-    let status = await page.goto(url, {timeout: 0});
+    let status = null; 
+    try {
+        //attempt to go to the page
+        await page.goto(url, {timeout: 0});
+    } catch (err) {
+        //if it fails, log why, then try again
+        console.log(err);
+    } finally {
+        //try again in 5 seconds
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        status = await page.goto(url, {timeout: 0});
+    }
+
+    //if it fails again, return
+    if (status == null) {
+        console.log("status is null");
+        return;
+    }
     
     if (Number(status.status()) != Number(200)) {
         console.log(status.status());
